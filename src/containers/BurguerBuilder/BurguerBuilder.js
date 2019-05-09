@@ -1,10 +1,13 @@
 import React from 'react'
-import Aux from '../../hoc/Auxiliary'
+import Aux from '../../hoc/Auxiliary/Auxiliary'
 import Burguer from '../../components/Burguer/Burguer'
 import BuildControls from '../../components/Burguer/BuildControls/BuildControls'
 import buildControl from '../../components/Burguer/BuildControls/BuildControl/BuildControl';
 import Modal from '../../components/UI/Modal/Modal'
 import OrderSummary from '../../components/Burguer/OrderSummary/OrderSummary'
+import axios from '../../axios-orders'
+import Spinner from '../../components/UI/Spinner/Spinner'
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler'
 
 
 
@@ -25,7 +28,8 @@ class BurguerBuilder extends React.Component{
         },
         totalPrice: 4,
         purchaseable: false,
-        purchasing: false
+        purchasing: false,
+        loading: false
     }
 
     updatePurchaseable (ingredients){
@@ -99,7 +103,29 @@ class BurguerBuilder extends React.Component{
     }
 
     purchaseContinueHandler = () =>{
-        alert('you continued');
+        // alert('you continued');
+        this.setState ({loading : true});
+        const order = {
+            ingredients: this.state.ingredients,
+            price: this.state.totalPrice,
+            customer: {
+                name: "ivo godoy",
+                address:{
+                    street: 'Lauria 1254',
+                    zipCode: '41351',
+                    country: 'Argentina'
+                },
+                email: 'ivoeg@hotmail.com'
+            },
+            deliveryMethod: 'fastest'
+        }
+        axios.post('/orders.json', order)
+            .then(response => {
+                this.setState({loading: false , purchasing: false});
+            })
+            .catch(error =>{
+                this.setState({loading: false , purchasing: false});
+            });
     }
 
     render(){
@@ -109,16 +135,21 @@ class BurguerBuilder extends React.Component{
         for (let key in disabledInfo){
             disabledInfo[key] = disabledInfo[key] <= 0
         }
+        let orderSummary = <OrderSummary 
+            ingredients={this.state.ingredients}
+            purchaseCanceled={this.purchaseCancelHandler}
+            purchaseContinued={this.purchaseContinueHandler}
+            price={this.state.totalPrice.toFixed(2)}/>;
+
+        if (this.state.loading){
+            orderSummary = <Spinner/>
+        }
         return(
             <Aux>
                 <Modal 
                     show={this.state.purchasing} 
                     modalClosed={this.purchaseCancelHandler}>
-                        <OrderSummary 
-                        ingredients={this.state.ingredients}
-                        purchaseCanceled={this.purchaseCancelHandler}
-                        purchaseContinued={this.purchaseContinueHandler}
-                        price={this.state.totalPrice.toFixed(2)}/>
+                        {orderSummary}
                     </Modal>
                     <Burguer ingredients={this.state.ingredients}/>
                     <BuildControls 
@@ -135,4 +166,4 @@ class BurguerBuilder extends React.Component{
     }
 }
 
-export default BurguerBuilder;
+export default withErrorHandler(BurguerBuilder, axios);

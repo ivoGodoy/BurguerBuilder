@@ -1,7 +1,8 @@
 import React, {Component} from 'react'
-import Aux from '../../../hoc/Auxiliary'
+import Aux from '../../../hoc/Auxiliary/Auxiliary'
 import Button from '../../UI/Button/Button'
-import { isMaster } from 'cluster';
+import propTypes from 'prop-types'
+
 
 class OrderSummary extends Component {
     //this could be a functional component it doesnt have to be a class based component.
@@ -33,4 +34,10 @@ class OrderSummary extends Component {
     }
 }
 
+
+OrderSummary.propTypes = {
+    ingredients: propTypes.object,
+    purchaseCanceled: propTypes.func,
+    clicked: propTypes.func
+}
 export default OrderSummary;
